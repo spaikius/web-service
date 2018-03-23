@@ -25,7 +25,8 @@ Avialable methods:
     },
     ...
 ]
-
+```
+```
 ROOT inner child -> '/<id>'
 Avialable methods:
     GET: Return inner child of shopping_list by id
@@ -40,6 +41,8 @@ Avialable methods:
     "done": false,
     "id": 1
  },
+```
+```
 Attributes 'buy' list element -> '/<id>/<list_index>'
 Avialable methods:
     GET: get product by product_id (list index)
