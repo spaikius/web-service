@@ -197,7 +197,7 @@ class Product(Resource):
 
         del shopping_list[index]['buy'][product_id]
 
-        return shopping_list[index]['buy'][product_id], 204
+        return '', 204
 
 
 ## routing
