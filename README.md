@@ -6,10 +6,10 @@ docker-compose up
 ```
 ## Routing and available methods
 
-ROOT -> '/shopping'
+ROOT -> '/shopping'  
 Avialable methods:
-    GET: return all shopping lists or by name
-    POST: add a new shopping list (Attribute 'buy' is set to empty list if no list provided)
+1) GET: return all shopping lists or by name
+2) POST: add a new shopping list (Attribute 'buy' is set to empty list if no list provided)
 ```JSON
 [
     {
@@ -26,8 +26,8 @@ Avialable methods:
 ]
 ```
 
-shopping inner child -> '/shopping/<id>'
+shopping inner child -> '/shopping/<id>'  
 Avialable methods:
-    GET: Return inner child of shopping_list by id
-    PUT: Update attributes
-    DELETE: Delete child
+1) GET: Return inner child of shopping_list by id
+2) PUT: Update attributes
+3) DELETE: Delete child
