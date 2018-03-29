@@ -13,13 +13,13 @@ Avialable methods:
 ```JSON
 [
     {
-        'id': 0,
-        'name': 'Pirmadienis',
-        'done': False,
-        'list': [
+        "id": 0,
+        "name": "Pirmadienis",
+        "done": false,
+        "list": [
             {
-                'product': 'Pienas',
-                'quantity': 1
+                "product": "Pienas",
+                "quantity": 1
             },
         ]
     },
