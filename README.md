@@ -22,7 +22,9 @@ Avialable methods:
                 'quantity': 1
             },
         	...
-        ]
+    }
+    ...
+]
 ```
 
 shopping inner child -> '/shopping/<id>'
