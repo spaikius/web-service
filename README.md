@@ -26,7 +26,7 @@ Avialable methods:
 ]
 ```
 
-shopping inner child -> '/shopping/<id>'  
+shopping inner child -> '/shopping/< list_id >'  
 Avialable methods:
 1) GET: Return inner child of shopping_list by id
 2) PUT: Update attributes
