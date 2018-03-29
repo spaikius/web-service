@@ -21,9 +21,8 @@ Avialable methods:
                 'product': 'Pienas',
                 'quantity': 1
             },
-        	...
-    }
-    ...
+        ]
+    },
 ]
 ```
 
