@@ -51,7 +51,7 @@ def get_index_or_abort(list_id):
 
 # Return all shopping lists or by name
 @app.route('/shopping', methods=['GET'])
-def get_football_teams():
+def get_shopping_lists():
     if request.args.get('name', None):
         found_list = list()
         for lst in shopping_list:
