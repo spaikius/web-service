@@ -13,7 +13,7 @@ docker-compose up
         "done": false,
         "list": [
             {
-                "product_id": 0
+                "product_id": 0,
                 "product": "Pienas",
                 "quantity": 1
             },
@@ -28,14 +28,14 @@ docker-compose up
 Avialable methods:
 1) GET: return all shopping lists
     OR retrun shopping list by attribute "name"
-2) POST: add a new shopping list 
+2) POST: add a new shopping list. 
 Attribute "list" is set to (example below) if no list provided 
 ```JSON
 [
     {
-        'product_id': 0,
-        'product': None,
-        'quantity': None
+        "product_id": 0,
+        "product": None,
+        "quantity": None
     }
 ]
 ```
