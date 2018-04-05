@@ -12,10 +12,12 @@ shopping_list = [
         'done': False,
         'list': [
             {
+                'product_id': 0,
                 'product': 'Pienas',
                 'quantity': 1
             },
             {
+                'product_id': 1,
                 'product': 'Agurku',
                 'quantity': 5
             }
@@ -27,10 +29,12 @@ shopping_list = [
         'done': False,
         'list': [
             {
+                'product_id': 0,
                 'product': 'Kefyro',
                 'quantity': 2
             },
             {
+                'product_id': 1,
                 'product': 'Sausainiu',
                 'quantity': 3
             }
@@ -39,11 +43,20 @@ shopping_list = [
 ]
 
 
-def get_index_or_abort(list_id):
+def get_index_or_abort(list_id, product_id=None):
     counter = 0
     for lst in shopping_list:
         if lst['id'] == list_id:
-            return counter
+            if product_id is None:
+                return counter
+            else:
+                p_counter = 0
+                for item in lst['list']:
+                    if item['product_id'] == product_id:
+                        return counter, p_counter
+
+                    p_counter += 1
+
         counter += 1
 
     abort(404, 'Shopping list with id {} does not exist'.format(list_id))
@@ -76,15 +89,14 @@ def create_shopping_list():
     try:
         lst = data['list']
 
-        if not isinstance(lst, list):
-            abort(400, 'Expected list, got {}'.format(lst))
-
+        id_count = 0
         for item in lst:
-            if not isinstance(item, dict):
-                abort(400, 'Expected dictionart, got {}'.format(item))
+            
+            item['product_id'] = id_count
+            id_count += 1
 
     except:
-        lst = [{'product': None, 'quantity': None}]
+        lst = [{'product_id': 0, 'product': None, 'quantity': None}]
 
     new_id = None
 
@@ -126,7 +138,15 @@ def change_info(list_id):
 
     try:
         name = data['name']
+    except KeyError:
+        pass
+
+    try:
         done = data['done']
+    except KeyError:
+        pass
+
+    try:
         lst = data['list']
     except KeyError:
         pass
@@ -150,6 +170,32 @@ def change_info(list_id):
     return jsonify(shopping_list[index]), 200
 
 
+@app.route('/shopping/<int:list_id>', methods=['POST'])
+def add_new_product(list_id):
+    l_index = get_index_or_abort(list_id)
+    data = request.get_json(force=True)
+
+    new_id = 0
+
+    ids = [_id['product_id'] for _id in shopping_list[l_index]['list']]
+
+    while new_id in ids:
+        new_id += 1
+
+    try:
+        new_product = {
+            'product_id': new_id,
+            'product': data['product'],
+            'quantity': data['quantity']
+        }
+    except:
+        abort(400, 'Product or its quantity not found')
+
+    shopping_list[l_index]['list'].append(new_product)
+
+    return jsonify(new_product), 200
+
+
 # Delete shopping list by id
 @app.route('/shopping/<int:list_id>', methods=['DELETE'])
 def delete_shopping_list(list_id):
@@ -162,6 +208,48 @@ def delete_shopping_list(list_id):
     return jsonify(True), 200
 
 
+@app.route('/shopping/<int:list_id>/<int:product_id>', methods=['GET'])
+def get_product(list_id, product_id):
+    l_index, p_index = get_index_or_abort(list_id, product_id)
+    return jsonify(shopping_list[l_index]['list'][p_index]), 200
+
+
+@app.route('/shopping/<int:list_id>/<int:product_id>', methods=['PUT'])
+def update_product(list_id, product_id):
+    l_index, p_index = get_index_or_abort(list_id, product_id)
+    data = request.get_json(force=True)
+
+    product = None
+    quantity = None
+
+    try:
+        product = data['product']
+    except:
+        pass
+
+    try:
+        quantity = data['quantity']
+        quantity += 0
+    except TypeError:
+        abort(400, 'Expected integer got {}'.format(data['quantity']))
+    except:
+        pass
+
+    if product:
+        shopping_list[l_index]['list'][p_index]['product'] = product
+    if quantity:
+        shopping_list[l_index]['list'][p_index]['quantity'] = quantity
+
+    return jsonify(shopping_list[l_index]['list'][p_index]), 200
+
+
+@app.route('/shopping/<int:list_id>/<int:product_id>', methods=['DELETE'])
+def delete_product(list_id, product_id):
+    l_index, p_index = get_index_or_abort(list_id, product_id)
+    del shopping_list[l_index]['list'][p_index]
+    return jsonify(True), 200
+
+
 # Error handler
 @app.errorhandler(404)
 def not_found(error):
@@ -170,4 +258,4 @@ def not_found(error):
 
 
 if __name__== "__main__":
-    app.run(host="0.0.0.0", debug=True)
+    app.run(host="0.0.0.0")
