@@ -34,8 +34,8 @@ Attribute "list" is set to (example below) if no list provided
 [
     {
         "product_id": 0,
-        "product": None,
-        "quantity": None
+        "product": none,
+        "quantity": none
     }
 ]
 ```
