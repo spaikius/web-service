@@ -86,6 +86,9 @@ def create_shopping_list():
     except:
         abort(400, "name or status 'done' not found. Got {}".format(data))
 
+    if not isinstance(done, bool):
+        abort(400, "Status 'done' is not type of boolean")
+
     try:
         lst = data['list']
 
@@ -145,6 +148,9 @@ def change_info(list_id):
         done = data['done']
     except KeyError:
         pass
+
+    if not isinstance(done, bool) and done is not None:
+        abort(400, "Status 'done' is not type of boolean")
 
     try:
         lst = data['list']

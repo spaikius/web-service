@@ -47,7 +47,7 @@ Avialable methods:
 3) POST: Add a new list element
 4) DELETE: Delete shopping_list[list_id]
 
-'/shopping/<  list_id  >/<  product_id  >'
+'/shopping/<  list_id  >/<  product_id  >'  
 Avialable methods:
 1) GET: Return shopping_list[list_id]  [product_id] 
 2) PUT: Update attributes in shopping_list[list_id]  [product_id]
