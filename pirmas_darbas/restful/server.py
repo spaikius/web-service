@@ -42,7 +42,6 @@ shopping_list = [
     },
 ]
 
-
 def get_index_or_abort(list_id, product_id=None):
     counter = 0
     for lst in shopping_list:
@@ -63,7 +62,7 @@ def get_index_or_abort(list_id, product_id=None):
 
 
 # Return all shopping lists or by name
-@app.route('/shopping', methods=['GET'])
+@app.route('/lists', methods=['GET'])
 def get_shopping_lists():
     if request.args.get('name', None):
         found_list = list()
@@ -76,7 +75,7 @@ def get_shopping_lists():
 
 
 # Add a new shopping list
-@app.route('/shopping', methods=['POST'])
+@app.route('/lists', methods=['POST'])
 def create_shopping_list():
     data = request.get_json(force=True)
 
@@ -117,19 +116,36 @@ def create_shopping_list():
 
     shopping_list.append(new_shopping_list)
 
-    return jsonify(new_shopping_list), 201
+    resp = make_response('Gut')
+    resp.headers['URL'] = 'https://kazkur.com'
+    
+
+    return jsonify(new_shopping_list), 201, resp 
 
 
 # Return shopping list by id
-@app.route('/shopping/<int:list_id>', methods=['GET'])
+@app.route('/lists/<int:list_id>', methods=['GET'])
 def get_list(list_id):
     index = get_index_or_abort(list_id)
 
     return jsonify(shopping_list[index])
 
+@app.route('/lists/<int:list_id>/products', methods=['GET'])
+def get_products_list(list_id):
+    index = get_index_or_abort(list_id)
+
+    return jsonify(shopping_list[index]['list'])
+
+
+@app.route('/lists/<int:list_id>', methods=['PATCH'])
+def list_patch(list_id):
+    index = get_index_or_abort(list_id)
+    data = request.get_json(force=True)
+
     
+
 # Change shopping list attributes by id
-@app.route('/shopping/<int:list_id>', methods=['PUT'])
+@app.route('/lists/<int:list_id>', methods=['PUT'])
 def change_info(list_id):
     index = get_index_or_abort(list_id)
 
@@ -142,12 +158,12 @@ def change_info(list_id):
     try:
         name = data['name']
     except KeyError:
-        pass
+        abort(400, "Missing attribute 'name'")
 
     try:
         done = data['done']
     except KeyError:
-        pass
+        abort(400, "Missing attribute 'done'")
 
     if not isinstance(done, bool) and done is not None:
         abort(400, "Status 'done' is not type of boolean")
@@ -155,7 +171,7 @@ def change_info(list_id):
     try:
         lst = data['list']
     except KeyError:
-        pass
+        abort(400, "Missing attribute 'done'")
 
     if lst:
         if not isinstance(lst, list):
@@ -176,7 +192,7 @@ def change_info(list_id):
     return jsonify(shopping_list[index]), 200
 
 
-@app.route('/shopping/<int:list_id>', methods=['POST'])
+@app.route('/lists/<int:list_id>', methods=['POST'])
 def add_new_product(list_id):
     l_index = get_index_or_abort(list_id)
     data = request.get_json(force=True)
@@ -203,7 +219,7 @@ def add_new_product(list_id):
 
 
 # Delete shopping list by id
-@app.route('/shopping/<int:list_id>', methods=['DELETE'])
+@app.route('/lists/<int:list_id>', methods=['DELETE'])
 def delete_shopping_list(list_id):
     index = get_index_or_abort(list_id)
 
@@ -214,13 +230,13 @@ def delete_shopping_list(list_id):
     return jsonify(True), 200
 
 
-@app.route('/shopping/<int:list_id>/<int:product_id>', methods=['GET'])
+@app.route('/lists/<int:list_id>/products/<int:product_id>', methods=['GET'])
 def get_product(list_id, product_id):
     l_index, p_index = get_index_or_abort(list_id, product_id)
     return jsonify(shopping_list[l_index]['list'][p_index]), 200
 
 
-@app.route('/shopping/<int:list_id>/<int:product_id>', methods=['PUT'])
+@app.route('/lists/<int:list_id>/products/<int:product_id>', methods=['PUT'])
 def update_product(list_id, product_id):
     l_index, p_index = get_index_or_abort(list_id, product_id)
     data = request.get_json(force=True)
@@ -249,7 +265,7 @@ def update_product(list_id, product_id):
     return jsonify(shopping_list[l_index]['list'][p_index]), 200
 
 
-@app.route('/shopping/<int:list_id>/<int:product_id>', methods=['DELETE'])
+@app.route('/lists/<int:list_id>/products/<int:product_id>', methods=['DELETE'])
 def delete_product(list_id, product_id):
     l_index, p_index = get_index_or_abort(list_id, product_id)
     del shopping_list[l_index]['list'][p_index]
