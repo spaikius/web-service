@@ -1,0 +1,7 @@
+version: '2'
+
+services:
+  shopping-service:
+    build: ./restful
+    ports:
+      - 5000:5000
