@@ -1,3 +1,4 @@
 FROM python:3-onbuild
-COPY . /usr/src/app
-CMD ["python", "server.py"]
+ADD . /code
+WORKDIR /code
+RUN pip install -r requirements.txt

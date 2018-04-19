@@ -1,7 +1,20 @@
 version: '2'
 
 services:
+  another-service:
+    build: ./WS
+    command: python ./WS/app.py runserver 0.0.0.0:5001
+    ports:
+      - 5001:5000
+    volumes:
+      - .:/code
+
   shopping-service:
     build: ./restful
+    command: python server.py
     ports:
       - 5000:5000
+    volumes:
+      - .:/code
+    links:
+      - another-service
