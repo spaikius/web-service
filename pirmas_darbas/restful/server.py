@@ -5,271 +5,149 @@ app = Flask(__name__)
 
 available_ids = list()
 
-shopping_list = [
+shopping_lists = [
     {
         'id': 0,
         'name': 'Pirmadienis',
         'done': False,
-        'list': [
-            {
-                'product_id': 0,
-                'product': 'Pienas',
-                'quantity': 1
-            },
-            {
-                'product_id': 1,
-                'product': 'Agurku',
-                'quantity': 5
-            }
-        ]
+        'cart': 'Pienas, Sausainiai'
     },
     {
         'id': 1,
-        'name': 'Antradienis',
-        'done': False,
-        'list': [
-            {
-                'product_id': 0,
-                'product': 'Kefyro',
-                'quantity': 2
-            },
-            {
-                'product_id': 1,
-                'product': 'Sausainiu',
-                'quantity': 3
-            }
-        ]
-    },
+        'name': 'Pirmadienis',
+        'done': True,
+        'cart': 'Alus, Medus'
+    }
 ]
 
-def get_index_or_abort(list_id, product_id=None):
-    counter = 0
-    for lst in shopping_list:
-        if lst['id'] == list_id:
-            if product_id is None:
-                return counter
-            else:
-                p_counter = 0
-                for item in lst['list']:
-                    if item['product_id'] == product_id:
-                        return counter, p_counter
-
-                    p_counter += 1
-
-        counter += 1
-
-    abort(404, 'Shopping list with id {} does not exist'.format(list_id))
+# Greetings
+@app.route('/', methods=['GET'])
+def greet():
+    return jsonify({'message': 'Welcome to my web service'})
 
 
-# Return all shopping lists or by name
+# GET shopping lists
 @app.route('/lists', methods=['GET'])
 def get_shopping_lists():
-    if request.args.get('name', None):
-        found_list = list()
-        for lst in shopping_list:
-            if re.search(request.args.get('name', None), lst["name"], re.I):
-                found_list.append(lst)
-        return jsonify(found_list), 200
-    else:
-        return jsonify(shopping_list), 200
+    return jsonify({'lists': shopping_lists}), 200
 
 
-# Add a new shopping list
+# POST add a new shopping list
 @app.route('/lists', methods=['POST'])
-def create_shopping_list():
+def add_new_list():
     data = request.get_json(force=True)
 
-    try:
-        name = data['name']
-        done = data['done']
-    except:
-        abort(400, "name or status 'done' not found. Got {}".format(data))
+    if 'name' not in data:
+        abort(400, "Missing attribute: name")
 
-    if not isinstance(done, bool):
-        abort(400, "Status 'done' is not type of boolean")
+    if 'cart' not in data:
+        abort(400, "Missing attribute: cart")
 
-    try:
-        lst = data['list']
+    if 'done' not in data:
+        abort(400, "Missing attribute: done")        
 
-        id_count = 0
-        for item in lst:
-            
-            item['product_id'] = id_count
-            id_count += 1
+    if not isinstance(data['cart'], str):
+        abort(400, "Expected type of str for 'cart', got: {}".format(type(data['cart'])))
 
-    except:
-        lst = [{'product_id': 0, 'product': None, 'quantity': None}]
+    if not isinstance(data['done'], bool):
+        abort(400, "Expected tpye of bool for 'done', got: {}".format(type(data['done'])))        
 
     new_id = None
-
     try:
         new_id = available_ids.pop(0)
     except IndexError:
-        new_id = len(shopping_list)
+        new_id = len(shopping_lists)
 
     new_shopping_list = {
         'id': new_id,
-        'name': name,
-        'done': done,
-        'list': lst
+        'name': data['name'],
+        'done': data['done'],
+        'cart': data['cart']
     }
 
-    shopping_list.append(new_shopping_list)
+    shopping_lists.append(new_shopping_list)
 
-    resp = make_response('Gut')
-    resp.headers['URL'] = 'https://kazkur.com'
-    
+    resp = make_response("Successfully added")
+    resp.headers['href'] = "/lists/{}".format(new_id)
+    resp.status_code = 201
 
-    return jsonify(new_shopping_list), 201, resp 
+    return resp 
 
 
-# Return shopping list by id
+# GET return specific list
 @app.route('/lists/<int:list_id>', methods=['GET'])
-def get_list(list_id):
-    index = get_index_or_abort(list_id)
-
-    return jsonify(shopping_list[index])
-
-@app.route('/lists/<int:list_id>/products', methods=['GET'])
-def get_products_list(list_id):
-    index = get_index_or_abort(list_id)
-
-    return jsonify(shopping_list[index]['list'])
+def return_list(list_id):
+    index = get_shopping_list_id_or_abort(list_id)
+    return jsonify({'list': shopping_lists[index]}), 200
 
 
-@app.route('/lists/<int:list_id>', methods=['PATCH'])
-def list_patch(list_id):
-    index = get_index_or_abort(list_id)
-    data = request.get_json(force=True)
-
-    
-
-# Change shopping list attributes by id
+# PUT update shopping list attributes
 @app.route('/lists/<int:list_id>', methods=['PUT'])
-def change_info(list_id):
-    index = get_index_or_abort(list_id)
-
-    data = request.get_json(force=True)
-
-    name = None
-    done = None
-    lst = None
-
-    try:
-        name = data['name']
-    except KeyError:
-        abort(400, "Missing attribute 'name'")
-
-    try:
-        done = data['done']
-    except KeyError:
-        abort(400, "Missing attribute 'done'")
-
-    if not isinstance(done, bool) and done is not None:
-        abort(400, "Status 'done' is not type of boolean")
-
-    try:
-        lst = data['list']
-    except KeyError:
-        abort(400, "Missing attribute 'done'")
-
-    if lst:
-        if not isinstance(lst, list):
-            abort(400, 'Expected list, got {}'.format(lst))
-
-        for item in lst:
-            if not isinstance(item, dict):
-                abort(400, 'Expected dictionary, got {}'.format(item))
-
-        shopping_list[index]['list'] = lst
-
-    if done:
-        shopping_list[index]['done'] = done
-
-    if name:
-        shopping_list[index]['name'] = name
-
-    return jsonify(shopping_list[index]), 200
-
-
-@app.route('/lists/<int:list_id>', methods=['POST'])
-def add_new_product(list_id):
-    l_index = get_index_or_abort(list_id)
-    data = request.get_json(force=True)
-
-    new_id = 0
-
-    ids = [_id['product_id'] for _id in shopping_list[l_index]['list']]
-
-    while new_id in ids:
-        new_id += 1
-
-    try:
-        new_product = {
-            'product_id': new_id,
-            'product': data['product'],
-            'quantity': data['quantity']
-        }
-    except:
-        abort(400, 'Product or its quantity not found')
-
-    shopping_list[l_index]['list'].append(new_product)
-
-    return jsonify(new_product), 200
-
-
-# Delete shopping list by id
-@app.route('/lists/<int:list_id>', methods=['DELETE'])
-def delete_shopping_list(list_id):
-    index = get_index_or_abort(list_id)
-
-    del shopping_list[index]
-
-    available_ids.append(index)
+def update_shopping_list(list_id):
+    index = get_shopping_list_id_or_abort(list_id)
     
-    return jsonify(True), 200
-
-
-@app.route('/lists/<int:list_id>/products/<int:product_id>', methods=['GET'])
-def get_product(list_id, product_id):
-    l_index, p_index = get_index_or_abort(list_id, product_id)
-    return jsonify(shopping_list[l_index]['list'][p_index]), 200
-
-
-@app.route('/lists/<int:list_id>/products/<int:product_id>', methods=['PUT'])
-def update_product(list_id, product_id):
-    l_index, p_index = get_index_or_abort(list_id, product_id)
     data = request.get_json(force=True)
 
-    product = None
-    quantity = None
+    if 'name' not in data or 'cart' not in data or 'done' not in data:
+        abort(400, "Attributes 'name', 'done' or 'cart' not found")
 
-    try:
-        product = data['product']
-    except:
-        pass
+    if not isinstance(data['cart'], str):
+        abort(400, "Expected type of str for 'cart', got: {}".format(type(data['cart'])))
 
-    try:
-        quantity = data['quantity']
-        quantity += 0
-    except TypeError:
-        abort(400, 'Expected integer got {}'.format(data['quantity']))
-    except:
-        pass
+    if not isinstance(data['done'], bool):
+        abort(400, "Expected tpye of bool for 'done', got: {}".format(type(data['done'])))        
 
-    if product:
-        shopping_list[l_index]['list'][p_index]['product'] = product
-    if quantity:
-        shopping_list[l_index]['list'][p_index]['quantity'] = quantity
+    shopping_lists[index]['name'] = data['name']
+    shopping_lists[index]['cart'] = data['cart']
+    shopping_lists[index]['done'] = data['done']
 
-    return jsonify(shopping_list[l_index]['list'][p_index]), 200
+    resp = make_response('Successfully updated')
+    resp.status_code = 200
+
+    return resp
 
 
-@app.route('/lists/<int:list_id>/products/<int:product_id>', methods=['DELETE'])
-def delete_product(list_id, product_id):
-    l_index, p_index = get_index_or_abort(list_id, product_id)
-    del shopping_list[l_index]['list'][p_index]
-    return jsonify(True), 200
+# PATCH
+@app.route('/lists/<int:list_id>', methods=['PATCH'])
+def update_attr(list_id):
+    index = get_shopping_list_id_or_abort(list_id)
+
+    data = request.get_json(force=True)
+
+    if 'name' in data:
+        shopping_lists[index]['name'] = data['name']
+
+    if 'cart' in data:
+        shopping_lists[index]['cart'] = data['cart']
+
+    if 'done' in data:
+        shopping_lists[index]['done'] = data['done']
+
+    resp = make_response('Successfully updated')
+    resp.status_code = 200
+
+    return resp
+
+
+# DELETE
+@app.route('/lists/<int:list_id>', methods=['DELETE'])
+def delete_list(list_id):
+    index = get_shopping_list_id_or_abort(list_id)
+
+    del shopping_lists[index]
+
+    resp = make_response('Successfully deleted')
+    resp.status_code = 200
+
+    return resp
+
+
+def get_shopping_list_id_or_abort(id):
+    for item in shopping_lists:
+        if(item['id'] == id):
+            return shopping_lists.index(item)
+
+    abort(404, 'Shopping list with id {} does not exist'.format(id))
 
 
 # Error handler
