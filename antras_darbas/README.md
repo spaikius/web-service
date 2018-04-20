@@ -6,6 +6,11 @@ docker-compose up
 ```
 
 ## Antra uzduotis
+### Paleidimas
+git clone https://github.com/spaikius/web-service.git
+cd antras_darbas
+docker-compose up
+
 ```
 web-server: https://github.com/DovilePatiejunaite/WebServices
 ```
