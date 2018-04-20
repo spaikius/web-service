@@ -9,6 +9,18 @@ docker-compose up
 ```
 web-server: https://github.com/DovilePatiejunaite/WebServices
 ```
+Nuorodu saugojimas
+```
+"tv_programs": [
+                {
+                    "id": 1,
+                    "url": "http://tv_programs:5000/tv_programs/1"
+                },
+                {
+                    "id": 2,
+                    "url": "http://tv_programs:5000/tv_programs/2"
+                }
+```
 
 ## Antros uzduotis metodai
 '/tv_programs'
@@ -34,7 +46,25 @@ web-server: https://github.com/DovilePatiejunaite/WebServices
 3) DELETE: pasalina tv programa is saraso
 
 
-
+# Pirmas uzduotis
+```JSON
+{
+        "id": 1,
+        "name": "Pirmadienis",
+        "done": true,
+        "cart": "Alus, Medus",
+        "tv_programs": [
+            {
+                "id": 3,
+                "url": "http://tv_programs:5000/tv_programs/3"
+            },
+            {
+                "id": 4,
+                "url": "http://tv_programs:5000/tv_programs/4"
+            }
+        ]
+}
+```
 ## Methods
 '/'
 Avialable methods:

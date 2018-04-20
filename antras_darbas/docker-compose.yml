@@ -1,21 +1,20 @@
 version: '2'
 
 services:
-  w1:
+  tv_programs:
     build: ./WS
     command: python ./WS/app.py runserver 0.0.0.0:5001
     ports:
       - 5001:5000
     volumes:
       - .:/app
-    depends_on:
-      - shopping-service      
-
-  shopping-service:
+    
+  shopping-list-service:
     build: ./restful
     command: python ./restful/server.py
     ports:
       - 5000:5000
     volumes:
       - .:/app
-    
+    links:
+      - tv_programs

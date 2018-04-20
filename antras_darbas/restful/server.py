@@ -15,12 +15,12 @@ shopping_lists = [
         'cart': 'Pienas, Sausainiai',
         'tv_programs': [
             {
-                'id': 0,
-                'url': 'http://w1:5000/tv_programs/1'
+                'id': 1,
+                'url': 'http://tv_programs:5000/tv_programs/1'
             },
             {
-                'id': 1,
-                'url': 'http://w1:5000/tv_programs/2'
+                'id': 2,
+                'url': 'http://tv_programs:5000/tv_programs/2'
             }
         ]
     },
@@ -31,12 +31,12 @@ shopping_lists = [
         'cart': 'Alus, Medus',
         'tv_programs': [
             {
-                'id': 0,
-                'url': 'http://w1:5000/tv_programs/3'
+                'id': 3,
+                'url': 'http://tv_programs:5000/tv_programs/3'
             },
             {
-                'id': 1,
-                'url': 'http://w1:5000/tv_programs/4'
+                'id': 4,
+                'url': 'http://tv_programs:5000/tv_programs/4'
             }
         ]
     }
@@ -86,12 +86,22 @@ def add_new_list():
     except IndexError:
         new_id = len(shopping_lists)
 
+    tv_programs = list()
+
+    try:
+        for item in data['tv_programs']:
+            check_if_valid_link(item['url'])
+            tv_id = int(re.search(r'\/(\d+)', item['url']).group(1))
+            tv_programs.append({'url': item['url'], 'id': tv_id})
+    except:
+        abort(400, "Invalid attribute: tv_programs")
+
     new_shopping_list = {
         'id': new_id,
         'name': data['name'],
         'done': data['done'],
         'cart': data['cart'],
-        'tv_programs': data['tv_programs']
+        'tv_programs': tv_programs
     }
 
     shopping_lists.append(new_shopping_list)
@@ -128,12 +138,22 @@ def update_shopping_list(list_id):
 
     if not isinstance(data['tv_programs'], list):
         abort(400, "Expected type of list for 'tv_programs', got: {}".format(type(data['tv_programs'])))    
-   
+
+    tv_programs = list()
+
+    try:
+        for item in data['tv_programs']:
+            check_if_valid_link(item['url'])
+            tv_id = int(re.search(r'\/(\d+)', item['url']).group(1))
+            tv_programs.append({'url': item['url'], 'id': tv_id})
+    except:
+        abort(400, "Invalid attribute: tv_programs")
+
 
     shopping_lists[index]['name'] = data['name']
     shopping_lists[index]['cart'] = data['cart']
     shopping_lists[index]['done'] = data['done']
-    shopping_lists[index]['tv_programs'] = data['tv_programs']
+    shopping_lists[index]['tv_programs'] = tv_programs
 
     resp = make_response('Successfully updated')
     resp.status_code = 200
@@ -197,9 +217,15 @@ def not_found(error):
 
 # ------------- 2 uzduotis ----------------
 
+def check_if_valid_link(link):
+    my_request = requests.get(link)
+    if my_request.status_code != 200:
+        abort(400, "Invalid link. Does not exsist: {}".format(link))
+
+
 @app.route('/tv_programs', methods=['GET'])
 def get_all_tv_programs():
-    link = 'http://w1:5000/tv_programs'
+    link = 'http://tv_programs:5000/tv_programs'
     my_request = requests.get(link)
     data = my_request.json()
     return jsonify({'programs': data}), 200
@@ -237,18 +263,21 @@ def add_new_tv_program(list_id):
     except KeyError:
         abort(400, "Not all attributes provided")
 
-    link = 'http://w1:5000/tv_programs'
+    link = 'http://tv_programs:5000/tv_programs'
 
     my_req = requests.post(link, json=new_tv)
     
-    new_id = shopping_lists[index]['tv_programs'][-1]['id'] + 1
+    new_id = int(re.search(r'\/(\d+)',my_req.headers['location']).group(1))
+
+
+    # new_id = shopping_lists[index]['tv_programs'][-1]['id'] + 1
 
     shopping_lists[index]['tv_programs'].append({'id': new_id, 'url': my_req.headers['location']})
 
     resp = make_response("Successfully added")
-    resp.headers['tv_program location'] = my_req.headers['location']
+    resp.headers['location'] = my_req.headers['location']
 
-    resp.headers['location'] = '/lists/{}/tv_programs/{}'.format(list_id, new_id)
+    resp.headers['symbolic link'] = '/lists/{}/tv_programs/{}'.format(list_id, new_id)
     resp.status_code = 201
     
     return resp
@@ -277,6 +306,10 @@ def delete_tv_program_by_id(list_id, program_id):
 
     for item in shopping_lists[index]['tv_programs']:
         if item['id'] == program_id:
+            my_req = requests.delete(item['url'])
+            if my_req.json()['DELETED'] != 'true':
+                abort(400, 'Error in tv_programs service side, item can not be deleted')
+
             program_index = shopping_lists[index]['tv_programs'].index(item)
             del shopping_lists[index]['tv_programs'][program_index]
 
