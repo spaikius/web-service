@@ -2,6 +2,7 @@ from flask import Flask, jsonify, abort, request, make_response
 import re
 import requests
 import json
+import copy
 
 app = Flask(__name__)
 
@@ -51,6 +52,17 @@ def greet():
 # GET shopping lists
 @app.route('/lists', methods=['GET'])
 def get_shopping_lists():
+    if request.args.get('embedded', '') == "tv_programs":
+        lists_emb = copy.deepcopy(shopping_lists)
+
+        for i in range(0, len(shopping_lists)):
+            lists_emb[i]['tv_programs'] = list()
+            for item in shopping_lists[i]['tv_programs']:
+                r = requests.get(item['url'])
+                lists_emb[i]['tv_programs'].append(r.json())
+
+        return jsonify({'lists': lists_emb}), 200
+
     return jsonify({'lists': shopping_lists}), 200
 
 
@@ -117,6 +129,16 @@ def add_new_list():
 @app.route('/lists/<int:list_id>', methods=['GET'])
 def return_list(list_id):
     index = get_shopping_list_id_or_abort(list_id)
+
+    if request.args.get('embedded', '') == "tv_programs":
+        lists_emb = copy.deepcopy(shopping_lists[index])
+        lists_emb['tv_programs'] = list() 
+        for item in shopping_lists[index]['tv_programs']:
+            r = requests.get(item['url'])
+            lists_emb['tv_programs'].append(r.json())
+
+        return jsonify({'list': lists_emb}), 200
+
     return jsonify({'list': shopping_lists[index]}), 200
 
 
