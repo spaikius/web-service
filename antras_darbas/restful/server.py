@@ -257,14 +257,20 @@ def get_all_tv_programs():
 def get_tv_programs(list_id):
     index = get_shopping_list_id_or_abort(list_id)
     tv_list = list()
-    for item in shopping_lists[index]['tv_programs']:
-        my_req = requests.get(item['url'])
-        if my_req.status_code == 404:
-            abort(404, "TV program not found")
-        data = my_req.json()
-        tv_list.append(data)
 
-    return jsonify({'programs': tv_list}), 200
+    if request.args.get('embedded', '') == "tv_programs":
+
+        for item in shopping_lists[index]['tv_programs']:
+            my_req = requests.get(item['url'])
+            if my_req.status_code == 404:
+                abort(404, "TV program not found")
+            data = my_req.json()
+            tv_list.append(data)
+
+        return jsonify({'tv_programs': tv_list}), 200
+
+    else:
+        return jsonify({'tv_programs': shopping_lists[index]['tv_programs']}), 200
 
 
 # POST
@@ -308,15 +314,21 @@ def add_new_tv_program(list_id):
 @app.route('/lists/<int:list_id>/tv_programs/<int:program_id>', methods=['GET'])
 def return_tv_program_by_id(list_id, program_id):
     index = get_shopping_list_id_or_abort(list_id)
-
+    counter = -1
     for item in shopping_lists[index]['tv_programs']:
+        counter += 1
         if item['id'] == program_id:
-            my_req = requests.get(item['url'])
-            if my_req.status_code == 404:
-                abort(404, "TV program not found")
-            data = my_req.json()
 
-            return jsonify({'tv_program': data}), 200
+            if request.args.get('embedded', '') == "tv_program":
+                my_req = requests.get(item['url'])
+                if my_req.status_code == 404:
+                    abort(404, "TV program not found")
+                data = my_req.json()
+
+                return jsonify({'tv_program': data}), 200
+
+            else:
+                return jsonify({'tv_program': shopping_lists[index]['tv_programs'][counter]}), 200
 
     abort(404, "TV program with id {} not found".format(program_id))
 

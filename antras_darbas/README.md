@@ -28,8 +28,6 @@ Nuorodu saugojimas
 ```
 
 ## Antros uzduotis metodai
-'/tv_programs'
-1) GET: Grazina visas tv programas
 
 '/lists/< list_id >/tv_programs'
 1) GET: Grazina visas tv programas priklausancias listui
