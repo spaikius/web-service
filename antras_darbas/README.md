@@ -29,6 +29,8 @@ Nuorodu saugojimas
 
 ## Antros uzduotis metodai
 
+http://localhost:5000/lists/0/tv_programs
+
 '/lists/< list_id >/tv_programs'
 1) GET: Grazina visas tv programas priklausancias listui
 2) POST: Sukuria nauja tv_programa
@@ -43,6 +45,8 @@ Nuorodu saugojimas
 	"legal_age": ""
 }
 ```
+http://localhost:5000/lists/0/tv_programs/2
+
 '/lists/< list_id >/tv_programs/< program_id >'
 1) GET: grazina tv programa pagal id
 2) PUT: atnauja tv programos atributus
