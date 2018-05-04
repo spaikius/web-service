@@ -154,7 +154,7 @@ def return_list(list_id):
 
     if request.args.get('embedded', '') == "tv_programs":
         lists_emb = copy.deepcopy(shopping_lists[index])
-        lists_emb['tv_phttp://tv_programs:5000/tv_programs/1rograms'] = list() 
+        lists_emb['tv_programs'] = list() 
         for item in shopping_lists[index]['tv_programs']:
             r = requests.get(item['url'])
             lists_emb['tv_programs'].append(r.json())
