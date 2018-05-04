@@ -100,13 +100,35 @@ def add_new_list():
 
     tv_programs = list()
 
-    try:
-        for item in data['tv_programs']:
-            check_if_valid_link(item['url'])
-            tv_id = int(re.search(r'\/(\d+)', item['url']).group(1))
-            tv_programs.append({'url': item['url'], 'id': tv_id})
-    except:
-        abort(400, "Invalid attribute: tv_programs")
+    for item in data['tv_programs']:
+        new_tv = dict()
+        try:
+            new_tv['television'] = item['television']
+            new_tv['type'] = item['type']
+            new_tv['title'] = item['title']
+            new_tv['start_time'] = item['start_time']
+            new_tv['description'] = item['description']
+            new_tv['release_year'] = item['release_year']
+            new_tv['legal_age'] = item['legal_age']
+        except KeyError:
+            abort(400, "Not all attributes provided")
+
+        link = 'http://tv_programs:5000/tv_programs'
+
+        my_req = requests.post(link, json=new_tv)
+    
+        tv_id = int(re.search(r'\/(\d+)',my_req.headers['location']).group(1))
+
+        tv_programs.append({'url': link + '/' + str(tv_id), 'id': tv_id})
+
+
+    # try:
+    #     for item in data['tv_programs']:
+    #         check_if_valid_link(item['url'])
+    #         tv_id = int(re.search(r'\/(\d+)', item['url']).group(1))
+    #         tv_programs.append({'url': item['url'], 'id': tv_id})
+    # except:
+    #     abort(400, "Invalid attribute: tv_programs")
 
     new_shopping_list = {
         'id': new_id,
@@ -132,7 +154,7 @@ def return_list(list_id):
 
     if request.args.get('embedded', '') == "tv_programs":
         lists_emb = copy.deepcopy(shopping_lists[index])
-        lists_emb['tv_programs'] = list() 
+        lists_emb['tv_phttp://tv_programs:5000/tv_programs/1rograms'] = list() 
         for item in shopping_lists[index]['tv_programs']:
             r = requests.get(item['url'])
             lists_emb['tv_programs'].append(r.json())
