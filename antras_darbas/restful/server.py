@@ -58,8 +58,11 @@ def get_shopping_lists():
         for i in range(0, len(shopping_lists)):
             lists_emb[i]['tv_programs'] = list()
             for item in shopping_lists[i]['tv_programs']:
-                r = requests.get(item['url'])
-                lists_emb[i]['tv_programs'].append(r.json())
+                try:
+                    r = requests.get(item['url'])
+                    lists_emb[i]['tv_programs'].append(r.json())
+                except:
+                    lists_emb[i]['tv_programs'].append("NULL")
 
         return jsonify({'lists': lists_emb}), 200
 
@@ -156,8 +159,11 @@ def return_list(list_id):
         lists_emb = copy.deepcopy(shopping_lists[index])
         lists_emb['tv_programs'] = list() 
         for item in shopping_lists[index]['tv_programs']:
-            r = requests.get(item['url'])
-            lists_emb['tv_programs'].append(r.json())
+            try:
+                r = requests.get(item['url'])
+                lists_emb['tv_programs'].append(r.json())
+            except:
+                lists_emb['tv_programs'].append("NULL")
 
         return jsonify({'list': lists_emb}), 200
 
@@ -283,11 +289,14 @@ def get_tv_programs(list_id):
     if request.args.get('embedded', '') == "tv_programs":
 
         for item in shopping_lists[index]['tv_programs']:
-            my_req = requests.get(item['url'])
-            if my_req.status_code == 404:
-                abort(404, "TV program not found")
-            data = my_req.json()
-            tv_list.append(data)
+            try:
+                my_req = requests.get(item['url'])
+                if my_req.status_code == 404:
+                    abort(404, "TV program not found")
+                data = my_req.json()
+                tv_list.append(data)
+            except:
+                tv_list.append("NULL")
 
         return jsonify({'tv_programs': tv_list}), 200
 
@@ -342,10 +351,13 @@ def return_tv_program_by_id(list_id, program_id):
         if item['id'] == program_id:
 
             if request.args.get('embedded', '') == "tv_program":
-                my_req = requests.get(item['url'])
-                if my_req.status_code == 404:
-                    abort(404, "TV program not found")
-                data = my_req.json()
+                try:
+                    my_req = requests.get(item['url'])
+                    if my_req.status_code == 404:
+                        abort(404, "TV program not found")
+                    data = my_req.json()
+                except:
+                    data = "NULL"
 
                 return jsonify({'tv_program': data}), 200
 
